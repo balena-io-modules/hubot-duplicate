@@ -13,12 +13,12 @@
 #   Andrew Lucas (sqweelygig) <andrewl@resin.io> <sqweelygig@gmail.com>
 class Duplicator
 	constructor: (robot) ->
-		@to = { name: process.env.HUBOT_DUPLICATE_TO }
-		@to.adapter = require('hubot-' + @to.name).use(robot)
+		@to =
+			name: process.env.HUBOT_DUPLICATE_TO
+			adapter: require('hubot-' + process.env.HUBOT_DUPLICATE_TO).use(robot)
 		@from = { name: process.env.HUBOT_DUPLICATE_FROM }
 		@pairs = JSON.parse process.env.HUBOT_DUPLICATE_ROOMS
-		@apiKeys = JSON.parse robot.brain.get('ScriptDuplicateAPIKeys')
-		@apiKeys ?= {}
+		@apiKeys = JSON.parse(robot.brain.get('ScriptDuplicateAPIKeys')) ? {}
 		@persists = new Set(Object.keys @apiKeys)
 		@robot = robot
 		@knownThreads = {}
@@ -105,7 +105,8 @@ class Duplicator
 
 	# Output in thread the accounts that have set up keys
 	listUsers: (respond) ->
-		respond JSON.stringify Object.keys(@apiKeys).map((val) -> '@' + val)
+		usernames = Object.keys(@apiKeys).map((val) -> '@' + val)
+		respond(JSON.stringify(usernames))
 
 	# Remove a user's details from both volatile and persistent memory
 	forgetUser: (username, respond) ->
@@ -122,7 +123,7 @@ class Duplicator
 				output["sha1(#{key})"] = @hash process.env[key]
 			else
 				output[key] = process.env[key]
-		respond JSON.stringify output
+		respond(JSON.stringify(output))
 
 	# Output in thread some explanatory notes
 	viewHelp: (respond) ->
@@ -163,8 +164,7 @@ class Duplicator
 
 	# Utility function to hash a string
 	hash: (string) ->
-		if string?
-			require('crypto').createHash('sha1').update(string).digest('hex')
+		require('crypto').createHash('sha1').update(string).digest('hex') if string?
 
 	# Utility function to return a user's object, creating if required
 	getObject: (username) ->
