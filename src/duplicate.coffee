@@ -19,6 +19,8 @@
 # Author:
 #   Andrew Lucas (sqweelygig) <andrewl@resin.io> <sqweelygig@gmail.com>
 
+utils = require 'hubot-utility'
+
 class Duplicator
 	constructor: (robot) ->
 		@to =
@@ -75,11 +77,13 @@ class Duplicator
 		for username, { key, pattern } of @apiKeys when from_ids.user.match(new RegExp(pattern ? username))
 			to_ids.user = key
 		if to_ids.user? and to_ids.flow?
-			@to.adapter.postUsing?(
-				text
-				to_ids
-				(error, posted_ids) => if not error then @knownThreads[from_ids.thread] = posted_ids.thread
-			)
+			if @to.adapter.postUsing?
+				@to.adapter.postUsing(
+					text
+					to_ids
+				)
+				.then((posted_ids) => @knownThreads[from_ids.thread] = posted_ids.thread)
+				.catch((error) -> utils.notify(error.message, error))
 
 	# Store an api key in volatile memory
 	setAPIKey: (username, value, respond) ->
@@ -126,8 +130,8 @@ class Duplicator
 	# Output in thread the environment variables
 	viewEnvVars: (respond) ->
 		respond(JSON.stringify
-			to: @to
-			from: @from
+			to: @to.name
+			from: @from.name
 			map: @roomMapping
 		)
 
