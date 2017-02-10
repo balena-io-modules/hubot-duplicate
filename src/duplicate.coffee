@@ -39,7 +39,7 @@ class Duplicator
 	setupActions: (robot) ->
 		# Core function
 		robot.hear /.*/i, (context) =>
-			@echo context.message.text
+			@echo context.message.text,
 				user: context.message.user.name
 				flow: context.message.room
 				comment: context.message.id
