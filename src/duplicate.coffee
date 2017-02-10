@@ -78,10 +78,7 @@ class Duplicator
 			to_ids.user = key
 		if to_ids.user? and to_ids.flow?
 			if @to.adapter.postUsing?
-				@to.adapter.postUsing(
-					text
-					to_ids
-				)
+				@to.adapter.postUsing(text, to_ids)
 				.then((posted_ids) => @knownThreads[from_ids.thread] = posted_ids.thread)
 				.catch((error) -> utils.notify(error.message, error))
 
